@@ -37,9 +37,6 @@ mongoose
   .then(() => console.log("mongoDb connected"))
   .catch((error) => {
     console.log("mongoDb connection error", error);
-    resizeBy
-      .status(500)
-      .json({ message: "server error", error: error.message });
   });
 
 const PORT = process.env.PORT || 5000;

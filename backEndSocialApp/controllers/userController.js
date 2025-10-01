@@ -3,6 +3,11 @@ const jwt = require("jsonwebtoken");
 
 const User = require("../models/user");
 
+// import generate otp and expiry otp
+const generateOtp = require("../utils/generateOtp");
+const otpExpiry = require("../utils/otpExpiry");
+const sendEmail = require("../utils/sendEmail");
+
 exports.userSignup = async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
   try {
@@ -16,15 +21,27 @@ exports.userSignup = async (req, res) => {
 
     const hashPassword = await bcrypt.hash(password, 10);
 
+    const otp = generateOtp();
+    const otpExpires = otpExpiry(3);
+
     const newUser = new User({
       firstName,
       lastName,
       email,
       password: hashPassword,
+      otp,
+      otpExpires,
+      isVerified: false,
     });
 
     await newUser.save();
-    res.status(201).json({ message: "User registered successfully" });
+
+    await sendEmail(email, "Verify your email", `Your OTP is: ${otp}`);
+    res.status(200).json({
+      success: true,
+      message: "Signup successful! OTP sent to your email",
+      email: email,
+    });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
@@ -53,12 +70,47 @@ exports.userlogin = async (req, res) => {
       expiresIn: "1h",
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       message: "Login successful",
       token,
       user: { id: user._id, email: user.email },
     });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
+  }
+};
+
+// user verification otp
+
+exports.verifyOtp = async (req, res) => {
+  const { email, otp } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "user not found" });
+    }
+    if (user.isVerified) {
+      return res.status(400).json({ message: "user already verfied" });
+    }
+
+    if (user.otp !== otp) {
+      return res.status(400).json({ message: "Invalid otp" });
+    }
+    if (Date.now() > user.otpExpires) {
+      return res.status(400).json({ message: "OTP expired" });
+    }
+
+    user.isVerified = true;
+    user.otp = null;
+    user.otpExpires = null;
+    await user.save();
+
+    return res.status(200).json({ message: "Email verified successfully" });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
   }
 };

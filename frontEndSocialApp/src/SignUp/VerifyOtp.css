@@ -1,0 +1,71 @@
+.verify-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+
+.verify-box {
+  background: #fff;
+  padding: 30px 40px;
+  border-radius: 10px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  width: 380px;
+  text-align: center;
+}
+
+.verify-box h2 {
+  margin-bottom: 15px;
+  color: #333;
+  font-size: 24px;
+}
+
+.verify-subtext {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.verify-subtext span {
+  font-weight: bold;
+  color: #007bff;
+}
+
+.verify-box form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.verify-box input {
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.verify-box button {
+  padding: 12px;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.verify-box button:hover {
+  background: #0056b3;
+}
+
+.verify-box button:disabled {
+  background: #a0a0a0;
+  cursor: not-allowed;
+}
+
+.error {
+  color: red;
+  font-size: 13px;
+}
