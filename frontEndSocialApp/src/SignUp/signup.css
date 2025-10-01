@@ -1,0 +1,191 @@
+/* ===== Reset & base ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+  background-color: #f5f6fa;
+}
+
+/* ===== Form Container ===== */
+.form-container {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+/* ===== Form Styling ===== */
+form {
+  background-color: #fff;
+  padding: 30px 25px;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 420px;
+}
+
+/* Form Heading */
+form h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #333;
+}
+
+/* ===== Form Groups ===== */
+.form-group {
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  transition: border 0.3s;
+}
+
+.form-group input:focus {
+  border-color: #007bff;
+}
+
+/* ===== Error Messages ===== */
+.error {
+  color: #ff4d4f;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+/* ===== Password Group ===== */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper input {
+  flex: 1;
+  padding-right: 40px; /* space for eye icon */
+}
+
+.password-toggle {
+  position: absolute;
+  right: 10px;
+  cursor: pointer;
+  color: #333;
+  font-size: 20px;
+}
+
+/* ===== Submit Button ===== */
+button[type="submit"] {
+  width: 100%;
+  padding: 12px;
+  background-color: #007bff;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button[type="submit"]:hover {
+  background-color: #0056b3;
+}
+
+/* ===== Already have account link ===== */
+.already-account {
+  margin-top: 15px;
+  font-size: 14px;
+  text-align: center;
+  color: #555;
+}
+
+.already-account a {
+  margin-left: 5px;
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.already-account a:hover {
+  text-decoration: underline;
+}
+
+/* ===== Toast container spacing ===== */
+.Toastify__toast-container {
+  font-size: 14px;
+}
+
+/* ===== Responsive ===== */
+
+/* Small devices (max-width: 480px) */
+@media (max-width: 480px) {
+  .form-container {
+    padding: 15px;
+  }
+
+  form {
+    padding: 20px 15px;
+    max-width: 100%; /* take full width */
+    border-radius: 8px;
+  }
+
+  .form-group input {
+    font-size: 13px;
+    padding: 9px 10px;
+  }
+
+  .password-toggle {
+    font-size: 18px;
+    right: 8px;
+  }
+
+  button[type="submit"] {
+    font-size: 15px;
+    padding: 10px;
+  }
+}
+
+/* Tablets (481px - 768px) */
+@media (max-width: 768px) {
+  form {
+    max-width: 90%; /* form takes 90% of screen */
+    padding: 25px 20px;
+  }
+
+  form h2 {
+    font-size: 20px;
+  }
+
+  .form-group input {
+    font-size: 14px;
+  }
+
+  button[type="submit"] {
+    font-size: 15px;
+  }
+}
+
+/* Larger screens (769px and up) */
+@media (min-width: 769px) {
+  form {
+    max-width: 420px; /* fixed width */
+  }
+}
