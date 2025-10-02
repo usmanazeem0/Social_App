@@ -36,12 +36,12 @@ export default function Login() {
         const url = "http://localhost:5000/user/login";
         const res = await axios.post(url, values);
 
-        localStorage.setItem("token", res.data.token);
         toast.success("login successful");
+        localStorage.setItem("token", res.data.token);
 
         setTimeout(() => {
           resetForm();
-          navigate("/dashboard"); // fixed route
+          navigate("/home"); // fixed route
           setSubmitting(false);
         }, 1000);
       } catch (error) {

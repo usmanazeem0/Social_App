@@ -2,9 +2,9 @@ import axios from "axios";
 import React, { useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { ToastContainer, toast } from "react-toastify";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai"; // eye icons
 import { Link, Navigate, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./signup.css";
 export default function Signup() {
@@ -68,25 +68,24 @@ export default function Signup() {
     }),
     onSubmit: async (values, { resetForm }) => {
       try {
-        const response = await axios.post(
-          "http://localhost:5000/user/signup",
-          {
-            firstName: values.firstName,
-            lastName: values.lastName,
-            email: values.email,
-            password: values.password,
-          }
-        );
-        console.log(response.data);
-        toast.success(response.data.message, {
+        const response = await axios.post("http://localhost:5000/user/signup", {
+          firstName: values.firstName,
+          lastName: values.lastName,
+          email: values.email,
+          password: values.password,
+        });
+
+        const message = response?.data?.message || "Signup successful";
+
+        toast.success(message, {
           position: "top-right",
           autoClose: 3000,
         });
+        // Save the email to localStorage for OTP verification
+        localStorage.setItem("signupEmail", values.email);
         resetForm();
-        // Navigate to login page after 3s
-        setTimeout(() => {
-          navigate("/login");
-        }, 1000);
+        // Navigate to verify-otp
+        navigate("/verify-otp", { state: { email: values.email } });
       } catch (error) {
         console.log(error.response.data);
         toast.error(error.response?.data?.message || "Signup failed", {
@@ -186,8 +185,6 @@ export default function Signup() {
           <Link to="/login">Login</Link>
         </p>
       </form>
-      {/* Toast container */}
-      <ToastContainer />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const path = require("path");
 const cors = require("cors");
 require("dotenv").config();
 
@@ -28,8 +29,13 @@ app.use(
   })
 );
 
+// Serve static uploads folder
+app.use("/uploads", express.static("uploads"));
+
 const userRoutes = require("./routes/user.routes");
+const postRoutes = require("./routes/posts.routes");
 app.use("/user", userRoutes);
+app.use("/posts", postRoutes);
 
 //mongoDb connection
 mongoose

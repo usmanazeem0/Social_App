@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 
-function teacherMiddleWare(req, res, next) {
+function userMiddleWare(req, res, next) {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
 
@@ -10,6 +10,7 @@ function teacherMiddleWare(req, res, next) {
 
   try {
     const decode = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("Decoded JWT:", decode);
     req.user = decode;
     next();
   } catch (error) {
@@ -17,4 +18,4 @@ function teacherMiddleWare(req, res, next) {
   }
 }
 
-module.exports = teacherMiddleWare;
+module.exports = userMiddleWare;
