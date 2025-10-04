@@ -1,4 +1,5 @@
 const Post = require("../models/post");
+const Like = require("../models/like");
 
 // Create new post controller
 
@@ -38,9 +39,26 @@ exports.getAllPosts = async (req, res) => {
     const posts = await Post.find()
       .populate({ path: "user", select: "firstName", options: { lean: true } })
       .sort({ createdAt: -1 });
+
+    //  For each post, count total likes
+    const postsWithLikes = await Promise.all(
+      posts.map(async (post) => {
+        const likes = await Like.find({ post: post._id }).populate(
+          "user",
+          "firstName"
+        );
+
+        return {
+          ...post.toObject(),
+          likes,
+          totalLikes: likes.length,
+        };
+      })
+    );
+
     return res.status(200).json({
       message: "All posts fetched successfully",
-      posts,
+      posts: postsWithLikes,
     });
   } catch (error) {
     console.log("Error in getAllPosts:", error);

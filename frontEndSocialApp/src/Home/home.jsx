@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { jwtDecode } from "jwt-decode";
+
 import Header from "../components/header";
 import axios from "axios";
 import { FaHeart, FaRegComment, FaUserCircle } from "react-icons/fa";
@@ -6,6 +8,7 @@ import "./Home.css"; // Import the CSS file
 
 export default function Home() {
   const [posts, setPosts] = useState([]);
+  const [likedPosts, setLikedPosts] = useState([]);
 
   useEffect(() => {
     fetchPosts();
@@ -14,18 +17,69 @@ export default function Home() {
   const fetchPosts = async () => {
     try {
       const token = localStorage.getItem("token");
+      if (!token) return;
+
+      //decode user info (e.g., user id) from token
+
+      const decoded = jwtDecode(token);
+      const userId = decoded.id || decoded._id;
+
       const res = await axios.get("http://localhost:5000/posts/all", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setPosts(res.data.posts);
+
+      const postsData = res.data.posts || [];
+
+      //extract user info for like
+      const likedIds = postsData
+        .filter((p) => p.likes?.some((like) => like.user?._id === userId))
+        .map((p) => p._id);
+      setPosts(postsData);
+      setLikedPosts(likedIds);
     } catch (error) {
       console.error("Error fetching posts:", error);
     }
   };
 
+  // function for like and unlike post
+
+  const handleLike = async (postId) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      // Decode userId inside this function
+      const decoded = jwtDecode(token);
+      const userId = decoded.id || decoded._id;
+      const res = await axios.post(
+        `http://localhost:5000/likes/${postId}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const { liked, post, totalLikes } = res.data;
+
+      setLikedPosts((prev) =>
+        liked ? [...prev, postId] : prev.filter((id) => id !== postId)
+      );
+      setPosts((prevPosts) =>
+        prevPosts.map((p) =>
+          p._id === postId
+            ? {
+                ...p,
+                likes: liked
+                  ? [...p.likes, { user: { _id: userId } }] // add current user
+                  : p.likes.filter((l) => l.user._id !== userId),
+                totalLikes: liked ? p.totalLikes + 1 : p.totalLikes - 1,
+              }
+            : p
+        )
+      );
+    } catch (error) {
+      console.log("error while like post", error);
+    }
+  };
+
   return (
     <div className="home-container">
-      {/* Fixed Header */}
       <div className="header-fixed">
         <Header />
       </div>
@@ -76,15 +130,31 @@ export default function Home() {
                 {/* Actions Section */}
                 <div className="post-actions">
                   <div className="post-actions-inner">
-                    <button className="post-action-button">
-                      <FaHeart style={{ fontSize: "18px" }} />
-                      <span style={{ fontWeight: "500" }}>
-                        {post.likes?.length || 0}
+                    <button
+                      className="post-action-button"
+                      onClick={() => handleLike(post._id)}
+                      style={{
+                        color: likedPosts.includes(post._id)
+                          ? "#dc2626"
+                          : "inherit",
+                      }}
+                    >
+                      <FaHeart
+                        style={{
+                          fontSize: "18px",
+                          color: likedPosts.includes(post._id)
+                            ? "#dc2626"
+                            : "#6b7280",
+                          transition: "color 0.2s ease",
+                        }}
+                      />
+                      <span style={{ fontWeight: "500", marginLeft: "5px" }}>
+                        {post.totalLikes ?? 0}
                       </span>
                     </button>
                     <button className="post-action-button comment">
                       <FaRegComment style={{ fontSize: "18px" }} />
-                      <span style={{ fontWeight: "500" }}>
+                      <span style={{ fontWeight: "500", marginLeft: "5px" }}>
                         {post.comments?.length || 0}
                       </span>
                     </button>

@@ -127,10 +127,17 @@
   cursor: pointer;
   transition: all 0.2s;
 }
+.post-action-button span {
+  transition: all 0.2s ease;
+}
 
 .post-action-button:hover {
   background-color: #fef2f2;
   color: #dc2626;
+}
+.post-action-button:hover svg {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
 }
 
 .post-action-button.comment:hover {
