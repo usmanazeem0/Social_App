@@ -30,3 +30,20 @@ exports.createPost = async (req, res) => {
     return res.status(500).json({ message: "Server Error" });
   }
 };
+
+// get all posts
+
+exports.getAllPosts = async (req, res) => {
+  try {
+    const posts = await Post.find()
+      .populate({ path: "user", select: "firstName", options: { lean: true } })
+      .sort({ createdAt: -1 });
+    return res.status(200).json({
+      message: "All posts fetched successfully",
+      posts,
+    });
+  } catch (error) {
+    console.log("Error in getAllPosts:", error);
+    return res.status(500).json({ message: "server error" });
+  }
+};

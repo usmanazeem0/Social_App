@@ -1,104 +1,107 @@
-import React, { useState } from "react";
-import {
-  AppBar,
-  Toolbar,
-  Box,
-  IconButton,
-  Typography,
-  Menu,
-  MenuItem,
-  Avatar,
-} from "@mui/material";
-import HomeIcon from "@mui/icons-material/Home";
-import PostAddIcon from "@mui/icons-material/PostAdd";
-import SettingsIcon from "@mui/icons-material/Settings";
-import LogoutIcon from "@mui/icons-material/Logout";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import Header from "../components/header";
+import axios from "axios";
+import { FaHeart, FaRegComment, FaUserCircle } from "react-icons/fa";
+import "./Home.css"; // Import the CSS file
 
 export default function Home() {
-  const navigate = useNavigate();
-  const [anchorEl, setAnchorEl] = useState(null);
+  const [posts, setPosts] = useState([]);
 
-  const handleProfileClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
+  useEffect(() => {
+    fetchPosts();
+  }, []);
 
-  const handleProfileClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-    handleProfileClose();
+  const fetchPosts = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get("http://localhost:5000/posts/all", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setPosts(res.data.posts);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    }
   };
 
   return (
-    <AppBar position="static" color="primary">
-      <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-        {/* Left: Logo + App Name */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <Typography variant="h6">SocialMediaApp</Typography>
-        </Box>
+    <div className="home-container">
+      {/* Fixed Header */}
+      <div className="header-fixed">
+        <Header />
+      </div>
 
-        {/* Middle: Home & Create Post */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 4 }}>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-            }}
-          >
-            <IconButton color="inherit">
-              <HomeIcon />
-            </IconButton>
-            <Typography variant="caption">Home</Typography>
-          </Box>
+      {/* Posts Container */}
+      <div className="posts-container">
+        <div className="posts-inner">
+          {posts.length > 0 ? (
+            posts.map((post) => (
+              <div key={post._id} className="post-card">
+                {/* Profile Section */}
+                <div className="post-profile">
+                  <FaUserCircle className="post-avatar" />
+                  <div className="post-user-info">
+                    <p className="post-username">{post.user.firstName}</p>
+                    <p className="post-time">
+                      {new Date(post.createdAt).toLocaleString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </p>
+                  </div>
+                </div>
 
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-            }}
-          >
-            <IconButton
-              color="inherit"
-              onClick={() => navigate("/create-post")}
-            >
-              <PostAddIcon />
-            </IconButton>
-            <Typography variant="caption">Create Post</Typography>
-          </Box>
-        </Box>
+                {/* Content Section */}
+                <div className="post-content">
+                  <h2 className="post-title">{post.title}</h2>
+                  <p className="post-description">{post.description}</p>
 
-        {/* Right: Profile */}
-        <Box>
-          <IconButton color="inherit" onClick={handleProfileClick}>
-            <AccountCircleIcon />
-          </IconButton>
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleProfileClose}
-          >
-            <MenuItem onClick={handleProfileClose}>
-              <AccountCircleIcon fontSize="small" sx={{ mr: 1 }} />
-              Profile
-            </MenuItem>
-            <MenuItem onClick={handleProfileClose}>
-              <SettingsIcon fontSize="small" sx={{ mr: 1 }} />
-              Settings
-            </MenuItem>
-            <MenuItem onClick={handleLogout}>
-              <LogoutIcon fontSize="small" sx={{ mr: 1 }} />
-              Logout
-            </MenuItem>
-          </Menu>
-        </Box>
-      </Toolbar>
-    </AppBar>
+                  {/* Image Section */}
+                  {post.imageUrl && (
+                    <div className="post-image-container">
+                      <img
+                        src={`http://localhost:5000/${post.imageUrl}`}
+                        alt="Post"
+                        className="post-image"
+                        onError={(e) => {
+                          e.target.style.display = "none";
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Actions Section */}
+                <div className="post-actions">
+                  <div className="post-actions-inner">
+                    <button className="post-action-button">
+                      <FaHeart style={{ fontSize: "18px" }} />
+                      <span style={{ fontWeight: "500" }}>
+                        {post.likes?.length || 0}
+                      </span>
+                    </button>
+                    <button className="post-action-button comment">
+                      <FaRegComment style={{ fontSize: "18px" }} />
+                      <span style={{ fontWeight: "500" }}>
+                        {post.comments?.length || 0}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="no-posts">
+              <p className="no-posts-title">No posts yet.</p>
+              <p className="no-posts-subtitle">
+                Be the first to create a post!
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }

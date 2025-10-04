@@ -1,0 +1,160 @@
+/* Home.css */
+.home-container {
+  min-height: 100vh;
+  background-color: #f3f4f6;
+  padding-top: 64px;
+}
+
+.header-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+.posts-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  min-height: calc(100vh - 64px);
+}
+
+.posts-inner {
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.post-card {
+  background-color: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.post-profile {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.post-avatar {
+  width: 40px;
+  height: 40px;
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.post-user-info {
+  margin-left: 12px;
+}
+
+.post-username {
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.post-time {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.post-content {
+  padding: 16px;
+}
+
+.post-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #111827;
+  margin: 0 0 8px 0;
+}
+
+.post-description {
+  color: #374151;
+  margin: 0 0 16px 0;
+  white-space: pre-wrap;
+}
+
+.post-image-container {
+  margin-bottom: 16px;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #f9fafb;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
+}
+
+.post-image {
+  max-width: 100%;
+  max-height: 300px;
+  width: auto;
+  height: auto;
+  display: block;
+  border-radius: 4px;
+}
+
+.post-actions {
+  padding: 12px 16px;
+  border-top: 1px solid #f3f4f6;
+  background-color: #f9fafb;
+}
+
+.post-actions-inner {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.post-action-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.post-action-button:hover {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+.post-action-button.comment:hover {
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+
+.no-posts {
+  background-color: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 32px;
+  text-align: center;
+}
+
+.no-posts-title {
+  color: #6b7280;
+  font-size: 18px;
+  font-weight: 500;
+  margin: 0 0 8px 0;
+}
+
+.no-posts-subtitle {
+  color: #9ca3af;
+  font-size: 14px;
+  margin: 0;
+}

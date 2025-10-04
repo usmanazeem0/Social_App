@@ -3,6 +3,7 @@ import {
   Routes,
   Route,
   Navigate,
+  useLocation,
 } from "react-router-dom";
 import { useState } from "react";
 
@@ -11,15 +12,17 @@ import "react-toastify/dist/ReactToastify.css";
 
 import "./App.css";
 import Signup from "./SignUp/signup";
+import VerifyOtp from "./SignUp/verifyOtp";
 import Login from "./Login/login";
 import Home from "./Home/home";
+import CreatePost from "./createPost/create-post";
+
 import ProtectedRoute from "./protectedRoutes/ProtectedRoute";
 import ProtectedRouteForHome from "./protectedRoutes/ProtectedRouteForHome";
-import VerifyOtp from "./SignUp/verifyOtp";
-import CreatePost from "./Home/createPost/create-post";
 
 function App() {
   const [count, setCount] = useState(0);
+  const location = useLocation();
 
   return (
     <>
