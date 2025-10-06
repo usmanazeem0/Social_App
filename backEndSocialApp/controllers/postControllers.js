@@ -37,7 +37,19 @@ exports.createPost = async (req, res) => {
 exports.getAllPosts = async (req, res) => {
   try {
     const posts = await Post.find()
-      .populate({ path: "user", select: "firstName", options: { lean: true } })
+      .populate({
+        path: "user",
+        select: "firstName", // post owner's name
+      })
+
+      .populate({
+        path: "comments",
+        populate: {
+          path: "user",
+          model: "user", // ensure it matches your lowercase model name!
+          select: "firstName",
+        },
+      })
       .sort({ createdAt: -1 });
 
     //  For each post, count total likes
@@ -57,6 +69,7 @@ exports.getAllPosts = async (req, res) => {
     );
 
     return res.status(200).json({
+      success: true,
       message: "All posts fetched successfully",
       posts: postsWithLikes,
     });

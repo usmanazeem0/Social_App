@@ -18,6 +18,13 @@ const postSchema = new mongoose.Schema(
       type: String, // path to uploaded image
       required: true,
     },
+
+    comments: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Comment", // 🔹 reference Comment model
+      },
+    ],
   },
   { timestamps: true }
 );

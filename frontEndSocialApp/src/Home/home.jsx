@@ -9,21 +9,20 @@ import "./Home.css"; // Import the CSS file
 export default function Home() {
   const [posts, setPosts] = useState([]);
   const [likedPosts, setLikedPosts] = useState([]);
+  const [showCommentBox, setShowCommentBox] = useState(null);
+  const [commentText, setCommentText] = useState("");
+  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
-    fetchPosts();
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    const decoded = jwtDecode(token);
+    setUserId(decoded.id || decoded._id);
+    fetchPosts(token, decoded.id || decoded._id);
   }, []);
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (token, userIdFromToken) => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-
-      //decode user info (e.g., user id) from token
-
-      const decoded = jwtDecode(token);
-      const userId = decoded.id || decoded._id;
-
       const res = await axios.get("http://localhost:5000/posts/all", {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -32,7 +31,9 @@ export default function Home() {
 
       //extract user info for like
       const likedIds = postsData
-        .filter((p) => p.likes?.some((like) => like.user?._id === userId))
+        .filter((p) =>
+          p.likes?.some((like) => like.user?._id === userIdFromToken)
+        )
         .map((p) => p._id);
       setPosts(postsData);
       setLikedPosts(likedIds);
@@ -44,12 +45,10 @@ export default function Home() {
   // function for like and unlike post
 
   const handleLike = async (postId) => {
+    if (!userId) return;
+    const token = localStorage.getItem("token");
+    if (!token) return;
     try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-      // Decode userId inside this function
-      const decoded = jwtDecode(token);
-      const userId = decoded.id || decoded._id;
       const res = await axios.post(
         `http://localhost:5000/likes/${postId}`,
         {},
@@ -66,15 +65,55 @@ export default function Home() {
             ? {
                 ...p,
                 likes: liked
-                  ? [...p.likes, { user: { _id: userId } }] // add current user
-                  : p.likes.filter((l) => l.user._id !== userId),
-                totalLikes: liked ? p.totalLikes + 1 : p.totalLikes - 1,
+                  ? [...(p.likes || []), { user: { _id: userId } }]
+                  : (p.likes || []).filter((l) => l.user._id !== userId),
+                totalLikes: liked
+                  ? (p.totalLikes || 0) + 1
+                  : (p.totalLikes || 0) - 1,
               }
             : p
         )
       );
     } catch (error) {
       console.log("error while like post", error);
+    }
+  };
+
+  const handleCommentSubmit = async (postId) => {
+    if (!commentText.trim()) return;
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    try {
+      const res = await axios.post(
+        `http://localhost:5000/comments/${postId}`,
+        { text: commentText },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const newComment = res.data.comment;
+
+      // Attach current user info to the new comment
+      // const newComment = {
+      //   _id: res.data.comment._id, // from backend
+      //   text: commentText,
+      //   user: { _id: userId, firstName: "You" }, // or get firstName from your state
+      //   createdAt: new Date().toISOString(),
+      // };
+
+      // updatedPost.comments = [...(updatedPost.comments || []), newComment];
+
+      setPosts((prev) =>
+        prev.map((p) =>
+          p._id === postId
+            ? { ...p, comments: [...(p.comments || []), newComment] }
+            : p
+        )
+      );
+
+      setCommentText("");
+      setShowCommentBox(null);
+    } catch (error) {
+      console.log("error while commenting", error);
     }
   };
 
@@ -94,7 +133,9 @@ export default function Home() {
                 <div className="post-profile">
                   <FaUserCircle className="post-avatar" />
                   <div className="post-user-info">
-                    <p className="post-username">{post.user.firstName}</p>
+                    <p className="post-username">
+                      {post?.user?.firstName || "Unknown"}
+                    </p>
                     <p className="post-time">
                       {new Date(post.createdAt).toLocaleString([], {
                         hour: "2-digit",
@@ -152,12 +193,52 @@ export default function Home() {
                         {post.totalLikes ?? 0}
                       </span>
                     </button>
-                    <button className="post-action-button comment">
+                    <button
+                      className="post-action-button comment"
+                      onClick={() =>
+                        setShowCommentBox(
+                          showCommentBox === post._id ? null : post._id
+                        )
+                      }
+                    >
                       <FaRegComment style={{ fontSize: "18px" }} />
                       <span style={{ fontWeight: "500", marginLeft: "5px" }}>
                         {post.comments?.length || 0}
                       </span>
                     </button>
+
+                    {showCommentBox === post._id && (
+                      <div className="comment-box">
+                        <input
+                          type="text"
+                          placeholder="Write a comment..."
+                          value={commentText}
+                          onChange={(e) => setCommentText(e.target.value)}
+                        />
+                        <button
+                          className="comment-submit"
+                          onClick={() => handleCommentSubmit(post._id)}
+                        >
+                          Post
+                        </button>
+                      </div>
+                    )}
+
+                    {post.comments?.length > 0 && (
+                      <div className="comments-list">
+                        {post.comments?.length > 0 &&
+                          post.comments
+                            .filter(Boolean) // remove any undefined comments
+                            .map((comment, index) => (
+                              <div key={comment._id || index}>
+                                <p className="font-semibold">
+                                  {comment?.user?.firstName || "Unknown"}
+                                </p>
+                                <p>{comment?.text || "No comment text"}</p>
+                              </div>
+                            ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

@@ -41,6 +41,9 @@ app.use("/posts", postRoutes);
 app.use("/likes", likeRoutes);
 app.use("/comments", commentRoutes);
 
+const cleanRoutes = require("./routes/temporary.routes");
+app.use("/api", cleanRoutes);
+
 //mongoDb connection
 mongoose
   .connect(process.env.MONGO_URI)

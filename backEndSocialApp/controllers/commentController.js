@@ -13,12 +13,44 @@ exports.addComment = async (req, res) => {
       return res.status(400).json({ error: "Comment text is required" });
     }
 
-    const comment = new Comment({ post: postId, user: userId, text });
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    const comment = new Comment({
+      post: postId,
+      user: userId,
+      text: text.trim(),
+    });
     await comment.save();
 
-    return res.status(201).json({ message: "Comment added", comment });
+    post.comments.push(comment._id);
+    await post.save();
+
+    // Populate user info before sending back
+    await comment.populate("user", "firstName");
+
+    // Push comment to post.comments array
+    // const updatedPost = await Post.findById(postId)
+    //   .populate({
+    //     path: "user",
+    //     select: "firstName",
+    //   })
+    //   .populate({
+    //     path: "comments",
+    //     populate: {
+    //       path: "user",
+    //       select: "firstName",
+    //     },
+    //   });
+
+    return res.status(201).json({
+      message: "Comment added successfully",
+      comment,
+      // post: updatedPost,
+    });
   } catch (error) {
-    console.log("Error adding comment:", error);
     return res.status(500).json({ error: "Server error while adding comment" });
   }
 };
@@ -33,7 +65,6 @@ exports.getComments = async (req, res) => {
 
     return res.status(200).json({ comments });
   } catch (error) {
-    console.error("Error fetching comments:", error);
     return res
       .status(500)
       .json({ error: "Server error while fetching comments" });
