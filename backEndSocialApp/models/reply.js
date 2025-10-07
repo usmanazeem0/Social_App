@@ -1,10 +1,11 @@
+// models/reply.js
 const mongoose = require("mongoose");
 
-const commentSchema = new mongoose.Schema(
+const replySchema = new mongoose.Schema(
   {
-    post: {
+    comment: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Post",
+      ref: "Comment",
       required: true,
     },
     user: {
@@ -16,14 +17,8 @@ const commentSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    replies: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Reply", // 🔹 reference to Reply model
-      },
-    ],
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Comment", commentSchema);
+module.exports = mongoose.model("Reply", replySchema);

@@ -31,20 +31,6 @@ exports.addComment = async (req, res) => {
     // Populate user info before sending back
     await comment.populate("user", "firstName");
 
-    // Push comment to post.comments array
-    // const updatedPost = await Post.findById(postId)
-    //   .populate({
-    //     path: "user",
-    //     select: "firstName",
-    //   })
-    //   .populate({
-    //     path: "comments",
-    //     populate: {
-    //       path: "user",
-    //       select: "firstName",
-    //     },
-    //   });
-
     return res.status(201).json({
       message: "Comment added successfully",
       comment,
@@ -59,9 +45,17 @@ exports.addComment = async (req, res) => {
 exports.getComments = async (req, res) => {
   try {
     const { postId } = req.params;
-    const comments = await Comment.find({ post: postId })
-      .populate("user", "firstName")
-      .sort({ createdAt: -1 });
+    const comments = await Comment.find({ post: postId }).populate(
+      "user",
+      "firstName"
+    );
+    populate({
+      path: "replies", // populate replies array
+      populate: {
+        path: "user", // and inside each reply, populate its user
+        select: "firstName",
+      },
+    }).sort({ createdAt: -1 });
 
     return res.status(200).json({ comments });
   } catch (error) {
