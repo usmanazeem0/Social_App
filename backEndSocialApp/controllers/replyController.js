@@ -18,7 +18,7 @@ exports.addReply = async (req, res) => {
       return res.status(404).json({ error: "Comment not found" });
     }
 
-    const reply = new Reply({
+    const reply = await Reply.create({
       comment: commentId,
       user: userId,
       text: text.trim(),
@@ -31,11 +31,13 @@ exports.addReply = async (req, res) => {
     await comment.save();
 
     // populate user before sending
-    await reply.populate("user", "firstName");
+    const populatedReply = await Reply.findById(reply._id)
+      .populate("user", "firstName")
+      .lean();
 
     return res.status(201).json({
       message: "Reply added successfully",
-      reply,
+      reply: populatedReply,
     });
   } catch (error) {
     console.log(error);

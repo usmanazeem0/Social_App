@@ -31,21 +31,25 @@ exports.toggleLike = async (req, res) => {
     }
 
     // Fetch updated post with likes populated
-    const updatedPost = await Post.findById(postId)
-      .populate("user", "firstName")
-      .lean();
+    // const updatedPost = await Post.findById(postId)
+    //   .populate("user", "firstName")
+    //   .lean();
 
-    const allLikes = await Like.find({ post: postId }).populate(
-      "user",
-      "firstName"
-    );
+    const allLikes = await Like.find({ post: postId });
+    const io = req.app.get("io");
+    io.emit("likeUpdated", { postId, totalLikes: allLikes.length });
+    //   .populate(
+    //     "user",
+    //     "firstName"
+    //   );
 
-    updatedPost.likes = allLikes;
+    //   (updatedPost.likes = allLikes)
+    // );
     return res.status(200).json({
       message: liked ? "Post liked" : "Post unliked",
       liked,
       totalLikes: allLikes.length,
-      post: updatedPost,
+      // post: updatedPost,
     });
   } catch (error) {
     return res.status(500).json({ error: "Server error while toggling like" });

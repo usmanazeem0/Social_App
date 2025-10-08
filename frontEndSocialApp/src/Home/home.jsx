@@ -6,6 +6,8 @@ import "react-toastify/dist/ReactToastify.css";
 import Header from "../components/header";
 import axios from "axios";
 import { FaHeart, FaRegComment, FaUserCircle } from "react-icons/fa";
+import { io } from "socket.io-client";
+
 import "./Home.css"; // Import the CSS file
 
 export default function Home() {
@@ -23,6 +25,29 @@ export default function Home() {
     const decoded = jwtDecode(token);
     setUserId(decoded.id || decoded._id);
     fetchPosts(token, decoded.id || decoded._id);
+
+    const socket = io("http://localhost:5000", {
+      withCredentials: true,
+    });
+
+    socket.on("connect", () => {
+      console.log("socket connected", socket.id);
+    });
+
+    socket.on("likeUpdated", ({ postId, totalLikes }) => {
+      setPosts((prev) =>
+        prev.map((p) => (p._id === postId ? { ...p, totalLikes } : p))
+      );
+    });
+
+    socket.on("disconnect", () => {
+      console.log("socket disconnected");
+    });
+
+    return () => {
+      socket.off("likeUpdated");
+      socket.disconnect();
+    };
   }, []);
 
   const fetchPosts = async (token, userIdFromToken) => {
@@ -63,21 +88,21 @@ export default function Home() {
       setLikedPosts((prev) =>
         liked ? [...prev, postId] : prev.filter((id) => id !== postId)
       );
-      setPosts((prevPosts) =>
-        prevPosts.map((p) =>
-          p._id === postId
-            ? {
-                ...p,
-                likes: liked
-                  ? [...(p.likes || []), { user: { _id: userId } }]
-                  : (p.likes || []).filter((l) => l.user._id !== userId),
-                totalLikes: liked
-                  ? (p.totalLikes || 0) + 1
-                  : (p.totalLikes || 0) - 1,
-              }
-            : p
-        )
-      );
+      // setPosts((prevPosts) =>
+      //   prevPosts.map((p) =>
+      //     p._id === postId
+      //       ? {
+      //           ...p,
+      //           likes: liked
+      //             ? [...(p.likes || []), { user: { _id: userId } }]
+      //             : (p.likes || []).filter((l) => l.user._id !== userId),
+      //           totalLikes: liked
+      //             ? (p.totalLikes || 0) + 1
+      //             : (p.totalLikes || 0) - 1,
+      //         }
+      //       : p
+      //   )
+      // );
     } catch (error) {
       console.log("error while like post", error);
     }
@@ -360,39 +385,40 @@ export default function Home() {
                             )}
 
                             {/*  Show Replies */}
-                            {comment.replies?.length > 0 && (
-                              <div className="replies-list">
-                                {comment.replies?.map((reply) => (
-                                  <div
-                                    key={
-                                      reply._id ||
-                                      `${comment._id}-${Math.random()}`
-                                    }
-                                    className="reply-item"
-                                  >
-                                    <p className="font-semibold">
-                                      {reply?.user?.firstName || "Unknown"}
-                                    </p>
-                                    <p className="comment-text">
-                                      {reply?.text}
-                                    </p>
-                                    <p className="comment-date">
-                                      {reply?.createdAt
-                                        ? new Date(
-                                            reply.createdAt
-                                          ).toLocaleString([], {
-                                            day: "2-digit",
-                                            month: "short",
-                                            year: "numeric",
-                                            hour: "2-digit",
-                                            minute: "2-digit",
-                                          })
-                                        : ""}
-                                    </p>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
+                            {Array.isArray(comment.replies) &&
+                              comment.replies?.length > 0 && (
+                                <div className="replies-list">
+                                  {comment.replies?.map((reply) => (
+                                    <div
+                                      key={
+                                        reply._id ||
+                                        `${comment._id}-${Math.random()}`
+                                      }
+                                      className="reply-item"
+                                    >
+                                      <p className="font-semibold">
+                                        {reply?.user?.firstName || "Unknown"}
+                                      </p>
+                                      <p className="comment-text">
+                                        {reply?.text}
+                                      </p>
+                                      <p className="comment-date">
+                                        {reply?.createdAt
+                                          ? new Date(
+                                              reply.createdAt
+                                            ).toLocaleString([], {
+                                              day: "2-digit",
+                                              month: "short",
+                                              year: "numeric",
+                                              hour: "2-digit",
+                                              minute: "2-digit",
+                                            })
+                                          : ""}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
                           </div>
                         ))}
                       </div>

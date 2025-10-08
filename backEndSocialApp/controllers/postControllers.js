@@ -44,11 +44,21 @@ exports.getAllPosts = async (req, res) => {
 
       .populate({
         path: "comments",
-        populate: {
-          path: "user",
-          model: "user", // ensure it matches your lowercase model name!
-          select: "firstName",
-        },
+        populate: [
+          {
+            path: "user",
+            model: "user",
+            select: "firstName",
+          },
+          {
+            path: "replies",
+            populate: {
+              path: "user",
+              model: "user",
+              select: "firstName",
+            },
+          },
+        ],
       })
       .sort({ createdAt: -1 });
 
