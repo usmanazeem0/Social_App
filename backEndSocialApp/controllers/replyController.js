@@ -35,6 +35,13 @@ exports.addReply = async (req, res) => {
       .populate("user", "firstName")
       .lean();
 
+    // emit reply of comment for real time update
+    const io = req.app.get("io");
+    io.emit("replyAdded", {
+      commentId,
+      reply: populatedReply,
+    });
+
     return res.status(201).json({
       message: "Reply added successfully",
       reply: populatedReply,

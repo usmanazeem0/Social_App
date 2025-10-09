@@ -31,6 +31,13 @@ exports.addComment = async (req, res) => {
     // Populate user info before sending back
     await comment.populate("user", "firstName");
 
+    //emit real time update for comments
+    const io = req.app.get("io");
+    io.emit("commentAdded", {
+      postId,
+      comment,
+    });
+
     return res.status(201).json({
       message: "Comment added successfully",
       comment,

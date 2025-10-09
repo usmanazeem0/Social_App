@@ -34,9 +34,43 @@ export default function Home() {
       console.log("socket connected", socket.id);
     });
 
+    //real time update for like
     socket.on("likeUpdated", ({ postId, totalLikes }) => {
       setPosts((prev) =>
         prev.map((p) => (p._id === postId ? { ...p, totalLikes } : p))
+      );
+    });
+
+    //real time update for comments
+    socket.on("commentAdded", ({ postId, comment }) => {
+      setPosts((prev) =>
+        prev.map((p) =>
+          p._id === postId
+            ? { ...p, comments: [...(p.comments || []), comment] }
+            : p
+        )
+      );
+    });
+
+    // real time update listen for replyComment
+    socket.on("replyAdded", ({ commentId, reply }) => {
+      setPosts((prevPosts) =>
+        prevPosts.map((p) => ({
+          ...p,
+          comments: p.comments.map((c) => {
+            if (c._id === commentId) {
+              // Check if this reply already exists (avoid duplicates)
+              const alreadyExists = c.replies?.some((r) => r._id === reply._id);
+              if (alreadyExists) return c; // do nothing
+
+              return {
+                ...c,
+                replies: [...(c.replies || []), reply],
+              };
+            }
+            return c;
+          }),
+        }))
       );
     });
 
@@ -46,7 +80,10 @@ export default function Home() {
 
     return () => {
       socket.off("likeUpdated");
+      socket.off("commentAdded");
+      socket.off("replyAdded");
       socket.disconnect();
+      console.log("checking that is the socket geeting close or not ");
     };
   }, []);
 
@@ -131,13 +168,13 @@ export default function Home() {
 
       // updatedPost.comments = [...(updatedPost.comments || []), newComment];
 
-      setPosts((prev) =>
-        prev.map((p) =>
-          p._id === postId
-            ? { ...p, comments: [...(p.comments || []), newComment] }
-            : p
-        )
-      );
+      // setPosts((prev) =>
+      //   prev.map((p) =>
+      //     p._id === postId
+      //       ? { ...p, comments: [...(p.comments || []), newComment] }
+      //       : p
+      //   )
+      // );
 
       toast.success("Comment posted successfully!", {
         position: "top-right",
@@ -183,21 +220,20 @@ export default function Home() {
       // save new reply
       const newReply = res.data.reply;
 
-      setPosts((prev) =>
-        prev.map((p) =>
-          p._id === postId
-            ? {
-                ...p,
-                comments: p.comments.map((c) =>
-                  c._id === commentId
-                    ? { ...c, replies: [...(c.replies || []), newReply] }
-                    : c
-                ),
-              }
-            : p
-        )
-      );
-
+      // setPosts((prev) =>
+      //   prev.map((p) =>
+      //     p._id === postId
+      //       ? {
+      //           ...p,
+      //           comments: p.comments.map((c) =>
+      //             c._id === commentId
+      //               ? { ...c, replies: [...(c.replies || []), newReply] }
+      //               : c
+      //           ),
+      //         }
+      //       : p
+      //   )
+      // );
       setReplyTexts((prev) => ({ ...prev, [commentId]: "" }));
       setActiveReplyBox(null);
       toast.success("Reply posted successfully!", { autoClose: 2000 });
