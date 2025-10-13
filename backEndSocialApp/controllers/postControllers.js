@@ -88,3 +88,101 @@ exports.getAllPosts = async (req, res) => {
     return res.status(500).json({ message: "server error" });
   }
 };
+
+// get all the post of login user
+
+exports.getUserPosts = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const posts = await Post.find({ user: userId })
+      .populate("user", "firstName")
+      .sort({ createdAt: -1 });
+
+    if (!posts.length) {
+      return res.status(200).json({
+        success: true,
+        message: "No posts found for this user",
+        posts: [],
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "User posts fetched successfully",
+      posts,
+    });
+  } catch (error) {
+    console.log("error while getting posts of login user", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+// update the post
+
+exports.updatePost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const { title, description } = req.body;
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Post not found" });
+    }
+
+    // Only owner can update
+    if (post.user.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: "Unauthorized" });
+    }
+
+    if (title) post.title = title;
+    if (description) post.description = description;
+
+    if (req.file) {
+      post.imageUrl = req.file.path; // If user uploads new image
+    }
+
+    await post.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Post updated successfully",
+      post,
+    });
+  } catch (error) {
+    console.log("error while updating post", error);
+
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+//delete post
+
+exports.deletePost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Post not found" });
+    }
+
+    // Only owner can delete
+    if (post.user.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, message: "Unauthorized" });
+    }
+
+    await post.deleteOne();
+
+    res.status(200).json({
+      success: true,
+      message: "Post deleted successfully",
+    });
+  } catch (error) {
+    console.log("error while deleting the post", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};

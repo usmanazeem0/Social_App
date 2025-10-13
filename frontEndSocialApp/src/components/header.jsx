@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import HomeIcon from "@mui/icons-material/Home";
 import PostAddIcon from "@mui/icons-material/PostAdd";
+import TimelineIcon from "@mui/icons-material/Timeline";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
@@ -52,8 +53,8 @@ export default function Header() {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              color: currentPath === "/home" ? "secondary.main" : "inherit",
-              "&:hover": { color: "secondary.light" },
+              color: currentPath === "/home" ? "yellow" : "inherit",
+              "&:hover": { color: "yellow" },
             }}
           >
             <IconButton color="inherit" onClick={() => navigate("/home")}>
@@ -68,6 +69,7 @@ export default function Header() {
               flexDirection: "column",
               alignItems: "center",
               color: currentPath === "/create-post" ? "yellow" : "inherit",
+              "&:hover": { color: "yellow" },
             }}
           >
             <IconButton
@@ -77,6 +79,22 @@ export default function Header() {
               <PostAddIcon />
             </IconButton>
             <Typography variant="caption">Create Post</Typography>
+          </Box>
+
+          {/* Timeline */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              color: currentPath === "/timeline" ? "yellow" : "inherit",
+              "&:hover": { color: "yellow" },
+            }}
+          >
+            <IconButton color="inherit" onClick={() => navigate("/timeline")}>
+              <TimelineIcon />
+            </IconButton>
+            <Typography variant="caption">Timeline</Typography>
           </Box>
         </Box>
 

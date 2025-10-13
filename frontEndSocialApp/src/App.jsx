@@ -16,12 +16,12 @@ import VerifyOtp from "./SignUp/verifyOtp";
 import Login from "./Login/login";
 import Home from "./Home/home";
 import CreatePost from "./createPost/create-post";
+import Timeline from "./Timeline/timeline";
 
 import ProtectedRoute from "./protectedRoutes/ProtectedRoute";
 import ProtectedRouteForHome from "./protectedRoutes/ProtectedRouteForHome";
 
 function App() {
-  const [count, setCount] = useState(0);
   const location = useLocation();
 
   return (
@@ -68,6 +68,15 @@ function App() {
           element={
             <ProtectedRouteForHome>
               <CreatePost />
+            </ProtectedRouteForHome>
+          }
+        />
+
+        <Route
+          path="/timeline"
+          element={
+            <ProtectedRouteForHome>
+              <Timeline />
             </ProtectedRouteForHome>
           }
         />
