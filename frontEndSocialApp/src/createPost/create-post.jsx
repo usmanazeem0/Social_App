@@ -11,7 +11,8 @@ import { PhotoCamera } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import axios from "axios";
+// import axios from "axios";
+import axiosInstance from "../api/axiosInstance";
 import Header from "../components/header";
 export default function CreatePost() {
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -23,7 +24,7 @@ export default function CreatePost() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const token = localStorage.getItem("token");
+    // const token = localStorage.getItem("token");
     if (!image) {
       toast.error("Please select an image!");
       return;
@@ -36,11 +37,25 @@ export default function CreatePost() {
 
     try {
       setUploadProgress(0);
-      await axios.post("http://localhost:5000/posts/create", formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
+      // await axios.post("http://localhost:5000/posts/create", formData, {
+      //   headers: {
+      //     Authorization: `Bearer ${token}`,
+      //     "Content-Type": "multipart/form-data",
+      //   },
+      //   onUploadProgress: (progressEvent) => {
+      //     if (progressEvent.total) {
+      //       const percent = Math.round(
+      //         (progressEvent.loaded * 100) / progressEvent.total
+      //       );
+      //       setUploadProgress(percent);
+      //     } else {
+      //       setUploadProgress(100);
+      //     }
+      //   },
+      // });
+
+      await axiosInstance.post(`/posts/create`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
         onUploadProgress: (progressEvent) => {
           if (progressEvent.total) {
             const percent = Math.round(
@@ -52,7 +67,6 @@ export default function CreatePost() {
           }
         },
       });
-
       toast.success("Post created successfully!");
       navigate("/home"); // redirect to home after creating post
     } catch (error) {

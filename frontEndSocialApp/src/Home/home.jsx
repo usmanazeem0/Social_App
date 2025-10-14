@@ -4,7 +4,9 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import Header from "../components/header";
-import axios from "axios";
+// import axios from "axios";
+import axiosInstance from "../api/axiosInstance";
+
 import { FaHeart, FaRegComment, FaUserCircle } from "react-icons/fa";
 import { io } from "socket.io-client";
 
@@ -22,9 +24,22 @@ export default function Home() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
-    const decoded = jwtDecode(token);
-    setUserId(decoded.id || decoded._id);
-    fetchPosts(token, decoded.id || decoded._id);
+    let decoded;
+    try {
+      decoded = jwtDecode(token);
+    } catch (error) {
+      console.error("Invalid token:", error);
+      localStorage.removeItem("token");
+      window.location.href = "/login"; // redirect to login
+      return; // stop further execution
+    }
+
+    const id = decoded.id || decoded._id;
+
+    setUserId(id);
+    fetchPosts(id);
+    // setUserId(decoded.id || decoded._id);
+    // fetchPosts(token, decoded.id || decoded._id);
 
     const socket = io("http://localhost:5000", {
       withCredentials: true,
@@ -87,12 +102,13 @@ export default function Home() {
     };
   }, []);
 
-  const fetchPosts = async (token, userIdFromToken) => {
+  const fetchPosts = async (userIdFromToken) => {
     try {
-      const res = await axios.get("http://localhost:5000/posts/all", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // const res = await axios.get("http://localhost:5000/posts/all", {
+      //   headers: { Authorization: `Bearer ${token}` },
+      // });
 
+      const res = await axiosInstance.get(`/posts/all`);
       const postsData = res.data.posts || [];
 
       //extract user info for like
@@ -112,14 +128,16 @@ export default function Home() {
 
   const handleLike = async (postId) => {
     if (!userId) return;
-    const token = localStorage.getItem("token");
-    if (!token) return;
+    // const token = localStorage.getItem("token");
+    // if (!token) return;
     try {
-      const res = await axios.post(
-        `http://localhost:5000/likes/${postId}`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      // const res = await axios.post(
+      //   `http://localhost:5000/likes/${postId}`,
+      //   {},
+      //   { headers: { Authorization: `Bearer ${token}` } }
+      // );
+
+      const res = await axiosInstance.post(`/likes/${postId}`);
       const { liked, post, totalLikes } = res.data;
 
       setLikedPosts((prev) =>
@@ -147,14 +165,18 @@ export default function Home() {
 
   const handleCommentSubmit = async (postId) => {
     if (!commentText.trim()) return;
-    const token = localStorage.getItem("token");
-    if (!token) return;
+    // const token = localStorage.getItem("token");
+    // if (!token) return;
     try {
-      const res = await axios.post(
-        `http://localhost:5000/comments/${postId}`,
-        { text: commentText },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      // const res = await axios.post(
+      //   `http://localhost:5000/comments/${postId}`,
+      //   { text: commentText },
+      //   { headers: { Authorization: `Bearer ${token}` } }
+      // );
+
+      const res = await axiosInstance.post(`/comments/${postId}`, {
+        text: commentText,
+      });
 
       const newComment = res.data.comment;
 
@@ -199,23 +221,25 @@ export default function Home() {
 
   const handleReplySubmit = async (commentId, postId, text) => {
     if (!text.trim()) return;
-    const token = localStorage.getItem("token");
-    if (!token) return;
+    // const token = localStorage.getItem("token");
+    // if (!token) return;
 
     try {
       const body = { text };
 
-      const config = {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      };
-      const res = await axios.post(
-        `http://localhost:5000/replies/${commentId}`,
-        body,
-        config
-      );
+      // const config = {
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //     Authorization: `Bearer ${token}`,
+      //   },
+      // };
+      // const res = await axios.post(
+      //   `http://localhost:5000/replies/${commentId}`,
+      //   body,
+      //   config
+      // );
+
+      const res = await axiosInstance.post(`/replies/${commentId}`, body);
 
       // save new reply
       const newReply = res.data.reply;

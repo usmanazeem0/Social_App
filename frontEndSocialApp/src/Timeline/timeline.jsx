@@ -1,7 +1,8 @@
-// import React, { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+// import axios from "axios";
+import axiosInstance from "../api/axiosInstance";
+
 import { IconButton, Menu, MenuItem } from "@mui/material";
 import { Modal, Box, TextField, Button } from "@mui/material";
 
@@ -32,10 +33,12 @@ export default function Timeline() {
 
   const fetchUserPosts = async (token, userId) => {
     try {
-      const res = await axios.get(
-        `http://localhost:5000/posts/user/${userId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      // const res = await axios.get(
+      //   `http://localhost:5000/posts/user/${userId}`,
+      //   { headers: { Authorization: `Bearer ${token}` } }
+      // );
+
+      const res = await axiosInstance.get(`/posts/user/${userId}`);
       setPosts(res.data.posts || []);
     } catch (error) {
       console.error("Error fetching user posts:", error);
@@ -70,12 +73,15 @@ export default function Timeline() {
   };
 
   const handleDelete = async (postId) => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
+    // const token = localStorage.getItem("token");
+    // if (!token) return;
     try {
-      await axios.delete(`http://localhost:5000/posts/${postId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // await axios.delete(`http://localhost:5000/posts/${postId}`, {
+      //   headers: { Authorization: `Bearer ${token}` },
+      // });
+
+      await axiosInstance.delete(`/posts/${postId}`);
+
       setPosts((prev) => prev.filter((p) => p._id !== postId));
       handleMenuClose();
     } catch (error) {
@@ -84,8 +90,8 @@ export default function Timeline() {
   };
 
   const handleUpdatePost = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
+    // const token = localStorage.getItem("token");
+    // if (!token) return;
 
     try {
       const formData = new FormData();
@@ -95,14 +101,22 @@ export default function Timeline() {
         formData.append("image", editPostData.image);
       }
 
-      const res = await axios.put(
-        `http://localhost:5000/posts/${editPostData.id}`,
+      // const res = await axios.put(
+      //   `http://localhost:5000/posts/${editPostData.id}`,
+      //   formData,
+      //   {
+      //     headers: {
+      //       Authorization: `Bearer ${token}`,
+      //       "Content-Type": "multipart/form-data",
+      //     },
+      //   }
+      // );
+
+      const res = await axiosInstance.put(
+        `/posts/${editPostData.id}`,
         formData,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
+          headers: { "Content-Type": "multipart/form-data" },
         }
       );
 

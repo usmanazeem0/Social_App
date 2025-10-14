@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import axios from "axios";
+// import axios from "axios";
+import axiosInstance from "../api/axiosInstance";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { ToastContainer, toast } from "react-toastify";
@@ -33,8 +34,11 @@ export default function Login() {
     }),
     onSubmit: async (values, { resetForm, setSubmitting }) => {
       try {
-        const url = "http://localhost:5000/user/login";
-        const res = await axios.post(url, values);
+        // const url = "http://localhost:5000/user/login";
+        // const res = await axios.post(url, values);
+
+        // implementing Interceptors
+        const res = await axiosInstance.post("/user/login", values);
 
         toast.success("login successful");
         localStorage.setItem("token", res.data.token);

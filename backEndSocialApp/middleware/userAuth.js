@@ -10,7 +10,7 @@ function userMiddleWare(req, res, next) {
 
   try {
     const decode = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("Decoded JWT:", decode);
+
     req.user = decode;
     next();
   } catch (error) {
