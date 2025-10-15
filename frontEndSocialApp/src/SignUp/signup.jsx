@@ -19,6 +19,7 @@ export default function Signup() {
       firstName: "",
       lastName: "",
       email: "",
+      dob: "",
       password: "",
       confirmPassword: "",
     },
@@ -51,6 +52,11 @@ export default function Signup() {
         .email("Invalid email format")
         .required("Email is required"),
 
+      //date of birth
+      dob: Yup.date()
+        .required("Date of Birth is required")
+        .max(new Date(), "Date of Birth cannot be in the future"),
+
       //password
 
       password: Yup.string()
@@ -72,6 +78,7 @@ export default function Signup() {
           firstName: values.firstName,
           lastName: values.lastName,
           email: values.email,
+          dob: values.dob,
           password: values.password,
         });
 
@@ -135,6 +142,21 @@ export default function Signup() {
             <p className="error">{formik.errors.email}</p>
           ) : null}
         </div>
+
+        {/* Date of Birth */}
+        <div className="form-group">
+          <label htmlFor="dob">Date of Birth</label>
+          <input
+            type="date"
+            id="dob"
+            max={new Date().toISOString().split("T")[0]} // prevents future date selection
+            {...formik.getFieldProps("dob")}
+          />
+          {formik.touched.dob && formik.errors.dob ? (
+            <p className="error">{formik.errors.dob}</p>
+          ) : null}
+        </div>
+
         {/* Password */}
         <div className="form-group password-group">
           <label htmlFor="password">Password</label>

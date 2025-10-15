@@ -133,6 +133,12 @@ button[type="submit"]:hover {
   font-size: 14px;
 }
 
+/* ===== Date input styling ===== */
+input[type="date"] {
+  font-family: inherit;
+  color: #333;
+}
+
 /* ===== Responsive ===== */
 
 /* Small devices (max-width: 480px) */

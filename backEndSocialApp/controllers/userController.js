@@ -9,12 +9,24 @@ const otpExpiry = require("../utils/otpExpiry");
 const sendEmail = require("../utils/sendEmail");
 
 exports.userSignup = async (req, res) => {
-  const { firstName, lastName, email, password } = req.body;
+  const { firstName, lastName, email, dob, password } = req.body;
   try {
     // check if the user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "Email already exists" });
+    }
+
+    // Check if dob is provided
+    if (!dob) {
+      return res.status(400).json({ message: "Date of Birth is required" });
+    }
+
+    // Check if dob is in the future
+    if (new Date(dob) > new Date()) {
+      return res
+        .status(400)
+        .json({ message: "Date of Birth cannot be in the future" });
     }
 
     // hash the user Password
@@ -28,6 +40,7 @@ exports.userSignup = async (req, res) => {
       firstName,
       lastName,
       email,
+      dob,
       password: hashPassword,
       otp,
       otpExpires,
