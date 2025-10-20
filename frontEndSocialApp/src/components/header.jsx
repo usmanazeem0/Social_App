@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axiosInstance from "../api/axiosInstance";
+import NotificationsDropdown from "./Notifications";
 import {
   AppBar,
   Toolbar,
@@ -7,8 +9,11 @@ import {
   Typography,
   Menu,
   MenuItem,
-  Avatar,
+  Badge,
 } from "@mui/material";
+// import NotificationsIcon from "@mui/icons-material/Notifications";
+import PublicIcon from "@mui/icons-material/Public";
+
 import HomeIcon from "@mui/icons-material/Home";
 import PostAddIcon from "@mui/icons-material/PostAdd";
 import TimelineIcon from "@mui/icons-material/Timeline";
@@ -21,6 +26,21 @@ export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const [anchorEl, setAnchorEl] = useState(null);
+
+  const [followRequestsCount, setFollowRequestsCount] = useState(0);
+
+  useEffect(() => {
+    const fetchFollowRequestsCount = async () => {
+      try {
+        const res = await axiosInstance.get("/api/follow/requests"); // backend returns pending requests
+        setFollowRequestsCount(res.data.requests?.length || 0);
+      } catch (err) {
+        console.error("Failed to fetch follow requests:", err);
+      }
+    };
+
+    fetchFollowRequestsCount();
+  }, []);
 
   const handleProfileClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -95,6 +115,20 @@ export default function Header() {
               <TimelineIcon />
             </IconButton>
             <Typography variant="caption">Timeline</Typography>
+          </Box>
+
+          {/* Notification Bell */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              color: currentPath === "/follow-requests" ? "yellow" : "inherit",
+              "&:hover": { color: "yellow" },
+            }}
+          >
+            <NotificationsDropdown count={followRequestsCount} />
+            <Typography variant="caption">Notifications</Typography>
           </Box>
         </Box>
 

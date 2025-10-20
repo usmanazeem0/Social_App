@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import socket from "../api/socket";
 
 import Header from "../components/header";
 // import axios from "axios";
@@ -20,6 +21,26 @@ export default function Home() {
   const [userId, setUserId] = useState(null);
   const [replyTexts, setReplyTexts] = useState({});
   const [activeReplyBox, setActiveReplyBox] = useState(null);
+  const [followStatus, setFollowStatus] = useState({});
+
+  // Fetch follow status from backend
+  const fetchFollowStatus = async () => {
+    try {
+      const res = await axiosInstance.get("/api/follow/requests");
+      const { sentRequests, receivedRequests } = res.data;
+
+      const statusMap = {};
+      // Map sentRequests to status
+      sentRequests.forEach((req) => {
+        if (req.status === "pending") statusMap[req.receiver] = "pending";
+        if (req.status === "accepted") statusMap[req.receiver] = "following";
+      });
+
+      setFollowStatus(statusMap);
+    } catch (err) {
+      console.error("Error fetching follow status:", err);
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -31,23 +52,29 @@ export default function Home() {
       console.error("Invalid token:", error);
       localStorage.removeItem("token");
       window.location.href = "/login"; // redirect to login
-      return; // stop further execution
+      return;
     }
 
     const id = decoded.id || decoded._id;
 
     setUserId(id);
+    if (id) {
+      socket.emit("registerUser", id);
+    }
     fetchPosts(id);
+    fetchFollowStatus();
     // setUserId(decoded.id || decoded._id);
     // fetchPosts(token, decoded.id || decoded._id);
 
-    const socket = io("http://localhost:5000", {
-      withCredentials: true,
-    });
+    // socket.on("connect", () => {
+    //   console.log("socket connected", socket.id);
+    // });
 
-    socket.on("connect", () => {
-      console.log("socket connected", socket.id);
-    });
+    // Register user for private notifications
+    if (id) {
+      socket.emit("registerUser", id);
+      console.log("Registered user with socket:", id);
+    }
 
     //real time update for like
     socket.on("likeUpdated", ({ postId, totalLikes }) => {
@@ -89,6 +116,26 @@ export default function Home() {
       );
     });
 
+    // Listen for follow request notifications
+    socket.on("followRequestSent", (data) => {
+      toast.info(`You got a follow request from user ${data.senderId}`, {
+        autoClose: 2000,
+      });
+    });
+
+    socket.on("followRequestAccepted", ({ senderId, receiverId }) => {
+      if (userId === senderId) {
+        setFollowStatus((prev) => ({ ...prev, [receiverId]: "following" }));
+        toast.success("Your follow request was accepted!");
+      }
+    });
+
+    socket.on("followRequestRejected", ({ senderId, receiverId }) => {
+      if (userId === senderId) {
+        setFollowStatus((prev) => ({ ...prev, [receiverId]: undefined }));
+        toast.error("Your follow request was rejected.");
+      }
+    });
     socket.on("disconnect", () => {
       console.log("socket disconnected");
     });
@@ -97,10 +144,39 @@ export default function Home() {
       socket.off("likeUpdated");
       socket.off("commentAdded");
       socket.off("replyAdded");
-      socket.disconnect();
-      console.log("checking that is the socket geeting close or not ");
+      socket.off("followRequestSent");
+      socket.off("followRequestAccepted");
+      socket.off("followRequestRejected");
     };
-  }, []);
+  }, [userId]);
+
+  const handleFollow = async (targetUserId) => {
+    const currentStatus = followStatus[targetUserId];
+    // Don't allow follow if already pending or following
+    if (currentStatus === "pending" || currentStatus === "following") {
+      return;
+    }
+    try {
+      const res = await axiosInstance.post(`/api/follow/send/${targetUserId}`);
+
+      setFollowStatus((prev) => ({
+        ...prev,
+        [targetUserId]: "pending",
+      }));
+      // await fetchFollowStatus();
+
+      toast.success(res.data.message || "Follow request sent!", {
+        autoClose: 2000,
+        hideProgressBar: false,
+      });
+    } catch (error) {
+      console.error("Error following user:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to send follow request",
+        { autoClose: 2000 }
+      );
+    }
+  };
 
   const fetchPosts = async (userIdFromToken) => {
     try {
@@ -211,7 +287,6 @@ export default function Home() {
       setCommentText("");
       setShowCommentBox(null);
     } catch (error) {
-      console.log("error while commenting", error);
       toast.error("Failed to post comment.", {
         position: "top-right",
         autoClose: 2000,
@@ -262,7 +337,6 @@ export default function Home() {
       setActiveReplyBox(null);
       toast.success("Reply posted successfully!", { autoClose: 2000 });
     } catch (error) {
-      console.log("error while reply", error);
       toast.error("Failed to post reply.", { autoClose: 2000 });
     }
   };
@@ -296,6 +370,29 @@ export default function Home() {
                       })}
                     </p>
                   </div>
+
+                  {/* Follow Button — show only if not self */}
+                  {post.user?._id !== userId && (
+                    <button
+                      className={`follow-btn ${
+                        followStatus[post.user._id] === "following"
+                          ? "following"
+                          : followStatus[post.user._id] === "pending"
+                          ? "pending"
+                          : ""
+                      }`}
+                      onClick={() => handleFollow(post.user._id)}
+                      disabled={["pending", "following"].includes(
+                        followStatus[post.user._id]
+                      )}
+                    >
+                      {followStatus[post.user._id] === "following"
+                        ? "Following"
+                        : followStatus[post.user._id] === "pending"
+                        ? "Pending"
+                        : "Follow"}
+                    </button>
+                  )}
                 </div>
 
                 {/* Content Section */}

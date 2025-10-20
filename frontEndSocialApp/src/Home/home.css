@@ -344,3 +344,33 @@
   background-color: #f1f5f9;
   transition: background-color 0.2s ease;
 }
+
+.follow-btn {
+  margin-left: auto;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.follow-btn:hover {
+  background-color: #1d4ed8;
+}
+
+.follow-btn.following {
+  background-color: #10b981;
+}
+
+.follow-btn.following:hover {
+  background-color: #059669;
+}
+
+.follow-btn.pending {
+  background-color: #f59e0b;
+  cursor: not-allowed;
+}

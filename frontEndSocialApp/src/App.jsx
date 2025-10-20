@@ -17,6 +17,7 @@ import Login from "./Login/login";
 import Home from "./Home/home";
 import CreatePost from "./createPost/create-post";
 import Timeline from "./Timeline/timeline";
+// import NotificationsDropdown from "./components/Notifications";
 
 import ProtectedRoute from "./protectedRoutes/ProtectedRoute";
 import ProtectedRouteForHome from "./protectedRoutes/ProtectedRouteForHome";

@@ -8,6 +8,11 @@ require("dotenv").config();
 const app = express();
 app.use(express.json());
 
+// app.use((req, res, next) => {
+//   console.log("Incoming request:", req.method, req.url);
+//   next();
+// });
+
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
@@ -38,14 +43,14 @@ const postRoutes = require("./routes/posts.routes");
 const likeRoutes = require("./routes/likes.routes");
 const commentRoutes = require("./routes/comments.routes");
 const replyRoutes = require("./routes/reply.routes");
+const followRoutes = require("./routes/follow.routes");
+
 app.use("/user", userRoutes);
 app.use("/posts", postRoutes);
 app.use("/likes", likeRoutes);
 app.use("/comments", commentRoutes);
 app.use("/replies", replyRoutes);
-
-const cleanRoutes = require("./routes/temporary.routes");
-app.use("/api", cleanRoutes);
+app.use("/api/follow", followRoutes);
 
 //mongoDb connection
 mongoose
@@ -79,6 +84,13 @@ const io = new Server(server, {
 // make global socket connection
 io.on("connection", (socket) => {
   console.log("user connected ", socket.id);
+
+  // When frontend connects, it should immediately send its userId
+  socket.on("registerUser", (userId) => {
+    if (!userId) return;
+    socket.join(userId.toString()); // Join private room
+    console.log(`User ${userId} joined their private room`);
+  });
 
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
