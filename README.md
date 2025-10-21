@@ -17,6 +17,8 @@ create posts, like, comment, and reply in real time — providing a smooth and i
 
 👤 User Profile: Each user can view their posts and interactions.
 
+Users can follow each others real time status update(follow, pending, following).
+
 🌙 Modern UI: Clean, responsive design built with React for a seamless experience.
 
 🛠️ Tech Stack
@@ -30,3 +32,7 @@ Database: MongoDB
 Authentication: JSON Web Token (JWT)
 
 Real-Time Communication: WebSockets (Socket.io)
+
+OTP Verification: NodeMailer
+
+Media Upload: Multer
